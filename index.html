@@ -1,60 +1,87 @@
-Barzy, [4/11/2025 1:26 AM]
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Persistent Group Management</title>
+    <title>Shared Group Management</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial; margin: 20px; padding: 20px; background-color: #f5f5f5; }
+        body { font-family: Arial; margin: 10px; padding: 10px; }
         .group { 
-            background: white; padding: 15px; margin-bottom: 15px; 
-            border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: #f0f8ff; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .group-title { font-weight: bold; margin-bottom: 10px; font-size: 18px; }
-        .members { display: flex; gap: 10px; flex-wrap: wrap; min-height: 20px; }
-        .member {
-            background: #e8f4f8; padding: 8px 12px; border-radius: 6px;
-            cursor: pointer; min-width: 100px; word-break: break-word;
+        .members { 
+            display: flex; 
+            gap: 8px; 
+            flex-wrap: wrap;
+            min-height: 30px;
+            margin-bottom: 10px;
         }
-        .add-area { display: flex; gap: 8px; margin-top: 10px; }
-        input { padding: 8px; flex: 1; border: 1px solid #ddd; border-radius: 6px; }
-        button { padding: 8px 15px; background: #4CAF50; color: white; border: none; border-radius: 6px; }
+        .member {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            min-width: 80px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            word-break: break-word;
+        }
+        .add-area { 
+            display: flex; 
+            gap: 5px; 
+            margin-top: 8px;
+        }
+        input { 
+            padding: 8px;
+            flex-grow: 1;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        button { 
+            padding: 8px 15px; 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        @media (max-width: 600px) {
+            .member { min-width: 60px; padding: 6px 10px; font-size: 14px; }
+            input, button { padding: 6px 10px; }
+        }
     </style>
 </head>
 <body>
-    <h1>Group Management System</h1>
-    <p>Names will be saved automatically</p>
+    <h1>Shared Group Management</h1>
+    <p>Add your name to any group below:</p>
     <div id="groups"></div>
 
     <script>
-        // Create 28 groups
+        // Create 28 empty groups
         const groupsContainer = document.getElementById('groups');
-        const STORAGE_KEY = 'groupManagementData';
         
-        // Load saved data
-        let savedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-        
-        // Initialize groups
         for (let i = 1; i <= 28; i++) {
-            const groupId = group-${i};
-            const groupHTML = `
-                <div class="group" id="${groupId}">
+            let groupHTML = `
+                <div class="group" id="group-${i}">
                     <div class="group-title">Group ${i}</div>
                     <div class="members" id="members-${i}"></div>
                     <div class="add-area">
-                        <input type="text" id="new-member-${i}" placeholder="Enter name">
+                        <input type="text" id="new-member-${i}" placeholder="Your name" aria-label="Your name">
                         <button onclick="addMember(${i})">Add</button>
                     </div>
                 </div>
             `;
             groupsContainer.innerHTML += groupHTML;
-            
-            // Load saved members for this group
-            if (savedData[groupId]) {
-                const membersContainer = document.getElementById(`members-${i}`);
-                savedData[groupId].forEach(name => {
-                    addMemberToDOM(i, name);
-                });
+        }
+
+        function editName(member) {
+            const newName = prompt("Edit name:", member.textContent);
+            if (newName && newName.trim() !== '') {
+                member.textContent = newName.trim();
             }
         }
 
@@ -67,51 +94,25 @@ Barzy, [4/11/2025 1:26 AM]
                 return;
             }
             
-            addMemberToDOM(groupNum, name);
-            input.value = '';
-            saveAllData();
-        }
-
-        function addMemberToDOM(groupNum, name) {
             const membersContainer = document.getElementById(`members-${groupNum}`);
+            
+            // Check if name already exists in this group
+            const existingNames = Array.from(membersContainer.children)
+                .map(member => member.textContent.toLowerCase());
+            
+            if (existingNames.includes(name.toLowerCase())) {
+                alert("This name already exists in the group");
+                return;
+            }
             
             const member = document.createElement('div');
             member.className = 'member';
             member.textContent = name;
-            member.onclick = function() {
-                const newName = prompt("Edit name:", name);
-                if (newName && newName.trim() !== '') {
-                    member.textContent = newName.trim();
-                    saveAllData();
-                }
-            };
+            member.onclick = function() { editName(this); };
             
             membersContainer.appendChild(member);
+            input.value = '';
         }
-
-        function saveAllData() {
-            const dataToSave = {};
-            
-            for (let i = 1; i <= 28; i++) {
-                const groupId = group-${i};
-                const membersContainer = document.getElementById(`members-${i}`);
-                const members = Array.from(membersContainer.children).map(member => member.textContent);
-                dataToSave[groupId] = members;
-            }
-            
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-        }
-
-        // Optional: Add delete functionality
-        document.addEventListener('click', function(e) {
-            if target.classList.contains('member') && e.shiftKey) {
-                
-                if (confirm("Delete this member?")) {
-                    e.target.remove();
-                    saveAllData();
-                }
-            }
-        });
     </script>
 </body>
 </html>
