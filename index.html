@@ -104,10 +104,8 @@ Barzy, [4/11/2025 1:26 AM]
 
         // Optional: Add delete functionality
         document.addEventListener('click', function(e) {
-            if (e.
-
-Barzy, [4/11/2025 1:26 AM]
-target.classList.contains('member') && e.shiftKey) {
+            if target.classList.contains('member') && e.shiftKey) {
+                
                 if (confirm("Delete this member?")) {
                     e.target.remove();
                     saveAllData();
